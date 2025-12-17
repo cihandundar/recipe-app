@@ -61,7 +61,10 @@ class RecipeSeeder extends Seeder
         ];
 
         foreach ($categories as $categoryData) {
-            RecipeCategory::create($categoryData);
+            RecipeCategory::firstOrCreate(
+                ['slug' => $categoryData['slug']],
+                $categoryData
+            );
         }
 
         // Test kullanıcısı oluştur (eğer yoksa)
@@ -236,7 +239,10 @@ class RecipeSeeder extends Seeder
         ];
 
         foreach ($recipes as $recipeData) {
-            Recipe::create($recipeData);
+            Recipe::firstOrCreate(
+                ['slug' => $recipeData['slug']],
+                $recipeData
+            );
         }
     }
 }

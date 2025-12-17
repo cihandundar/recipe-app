@@ -68,7 +68,10 @@ class BlogSeeder extends Seeder
         ];
 
         foreach ($categories as $categoryData) {
-            BlogCategory::create($categoryData);
+            BlogCategory::firstOrCreate(
+                ['slug' => $categoryData['slug']],
+                $categoryData
+            );
         }
 
         // Kategorileri al
@@ -180,7 +183,10 @@ class BlogSeeder extends Seeder
         ];
 
         foreach ($posts as $postData) {
-            BlogPost::create($postData);
+            BlogPost::firstOrCreate(
+                ['slug' => $postData['slug']],
+                $postData
+            );
         }
     }
 }
