@@ -77,6 +77,11 @@
                         </div>
                     @endforeach
                 </div>
+
+                {{-- Sayfalama --}}
+                <div class="mt-4">
+                    {{ $recipes->links() }}
+                </div>
             </div>
         @else
             <div class="empty-state text-center py-5">

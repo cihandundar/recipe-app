@@ -55,28 +55,45 @@ class UserController extends Controller
 
     /**
      * Kullanıcının favorileri
-     * Not: Favoriler sistemi henüz tam implement edilmedi
      */
     public function favorites()
     {
-        // Şimdilik boş liste döndürüyoruz
-        // Favoriler için pivot tablo oluşturulduğunda bu metod güncellenecek
-        $recipes = collect([]);
+        $user = Auth::user();
+        
+        $recipes = $user->favoriteRecipes()
+            ->with(['recipeCategory', 'user'])
+            ->published()
+            ->latest()
+            ->paginate(12);
 
         return view('pages.favorites', compact('recipes'));
     }
 
     /**
      * Favorilere ekle/çıkar
-     * Not: Favoriler sistemi henüz tam implement edilmedi
      */
     public function toggleFavorite($recipe)
     {
-        // Şimdilik basit bir mesaj döndürüyoruz
-        // Favoriler için pivot tablo oluşturulduğunda bu metod güncellenecek
-        
+        $user = Auth::user();
         $recipe = Recipe::findOrFail($recipe);
         
-        return back()->with('info', 'Favoriler özelliği yakında eklenecek!');
+        // Favorilerde var mı kontrol et
+        $isFavorited = $user->favoriteRecipes()->where('recipe_id', $recipe->id)->exists();
+        
+        if ($isFavorited) {
+            // Favorilerden çıkar
+            $user->favoriteRecipes()->detach($recipe->id);
+            $recipe->decrementFavorites();
+            $message = 'Tarif favorilerden çıkarıldı.';
+            $type = 'success';
+        } else {
+            // Favorilere ekle
+            $user->favoriteRecipes()->attach($recipe->id);
+            $recipe->incrementFavorites();
+            $message = 'Tarif favorilere eklendi!';
+            $type = 'success';
+        }
+        
+        return back()->with($type, $message);
     }
 }

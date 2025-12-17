@@ -111,7 +111,13 @@ class RecipeController extends Controller
             ->limit(4)
             ->get();
 
-        return view('pages.recipes.show', compact('recipe', 'relatedRecipes'));
+        // Kullanıcı favorilere eklemiş mi kontrol et
+        $isFavorited = false;
+        if (Auth::check()) {
+            $isFavorited = Auth::user()->favoriteRecipes()->where('recipe_id', $recipe->id)->exists();
+        }
+
+        return view('pages.recipes.show', compact('recipe', 'relatedRecipes', 'isFavorited'));
     }
 
     /**

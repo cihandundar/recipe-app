@@ -369,9 +369,13 @@
                     @auth
                     <div class="widget favorite-widget mb-4">
                         <div class="widget-content text-center">
-                            <button class="btn btn-primary w-100">
-                                <i class="fas fa-heart me-2"></i>Favorilere Ekle
-                            </button>
+                            <form action="{{ route('toggle-favorite', $recipe->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn {{ $isFavorited ? 'btn-danger' : 'btn-primary' }} w-100">
+                                    <i class="fas fa-heart me-2"></i>
+                                    {{ $isFavorited ? 'Favorilerden Çıkar' : 'Favorilere Ekle' }}
+                                </button>
+                            </form>
                         </div>
                     </div>
                     @endauth
