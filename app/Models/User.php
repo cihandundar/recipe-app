@@ -45,4 +45,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Bu kullanıcının tarifleri
+     */
+    public function recipes()
+    {
+        return $this->hasMany(Recipe::class);
+    }
 }

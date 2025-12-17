@@ -44,7 +44,13 @@ Route::prefix('blog')->name('blog.')->group(function () {
 
 // Dashboard (Breeze'den)
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $user = auth()->user();
+    $myRecipes = $user->recipes()->latest()->limit(6)->get();
+    $totalRecipes = $user->recipes()->count();
+    $publishedRecipes = $user->recipes()->where('is_published', true)->count();
+    $totalViews = $user->recipes()->sum('views');
+    
+    return view('dashboard', compact('myRecipes', 'totalRecipes', 'publishedRecipes', 'totalViews'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Kullanıcı Routes
