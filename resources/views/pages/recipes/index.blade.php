@@ -50,7 +50,7 @@
     {{-- Arama ve filtre bölümü --}}
     <div class="filters-section py-4 border-bottom border-secondary">
         <div class="container">
-            <form action="{{ route('recipes.index') }}" method="GET" class="row g-3">
+            <form action="{{ route('recipes.index') }}" method="GET" class="row g-3" id="recipe-filter-form">
                 {{-- Arama kutusu --}}
                 <div class="col-md-4">
                     <div class="input-group">
@@ -60,6 +60,7 @@
                         <input type="text" 
                                class="form-control bg-dark border-secondary text-white" 
                                name="search" 
+                               id="search-input"
                                placeholder="Tarif ara..." 
                                value="{{ request('search') }}">
                     </div>
@@ -67,7 +68,7 @@
 
                 {{-- Kategori filtresi --}}
                 <div class="col-md-3">
-                    <select name="category" class="form-select bg-dark border-secondary text-white">
+                    <select name="category" class="form-select bg-dark border-secondary text-white" id="category-filter">
                         <option value="">Tüm Kategoriler</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->slug }}" {{ request('category') == $category->slug ? 'selected' : '' }}>
@@ -79,7 +80,7 @@
 
                 {{-- Zorluk filtresi --}}
                 <div class="col-md-2">
-                    <select name="difficulty" class="form-select bg-dark border-secondary text-white">
+                    <select name="difficulty" class="form-select bg-dark border-secondary text-white" id="difficulty-filter">
                         <option value="">Tüm Zorluklar</option>
                         <option value="kolay" {{ request('difficulty') == 'kolay' ? 'selected' : '' }}>Kolay</option>
                         <option value="orta" {{ request('difficulty') == 'orta' ? 'selected' : '' }}>Orta</option>
@@ -89,21 +90,78 @@
 
                 {{-- Sıralama --}}
                 <div class="col-md-2">
-                    <select name="sort" class="form-select bg-dark border-secondary text-white">
-                        <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>En Yeni</option>
+                    <select name="sort" class="form-select bg-dark border-secondary text-white" id="sort-filter">
+                        <option value="latest" {{ request('sort', 'latest') == 'latest' ? 'selected' : '' }}>En Yeni</option>
                         <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Popüler</option>
                         <option value="rating" {{ request('sort') == 'rating' ? 'selected' : '' }}>En Çok Beğenilen</option>
                         <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>En Eski</option>
                     </select>
                 </div>
 
-                {{-- Filtrele butonu --}}
+                {{-- Filtrele ve Temizle butonları --}}
                 <div class="col-md-1">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-filter"></i>
-                    </button>
+                    <div class="d-flex gap-1">
+                        <button type="submit" class="btn btn-primary flex-fill" title="Filtrele">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                        @if(request()->hasAny(['search', 'category', 'difficulty', 'sort']))
+                            <a href="{{ route('recipes.index') }}" class="btn btn-secondary" title="Filtreleri Temizle">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        @endif
+                    </div>
                 </div>
             </form>
+
+            {{-- Aktif filtreler bilgisi --}}
+            @if(request()->hasAny(['search', 'category', 'difficulty', 'sort']))
+                <div class="active-filters mt-3">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <small class="text-muted">Aktif Filtreler:</small>
+                        @if(request('search'))
+                            <span class="badge bg-primary">
+                                Arama: "{{ request('search') }}"
+                                <a href="{{ route('recipes.index', request()->except('search')) }}" class="text-white ms-1">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </span>
+                        @endif
+                        @if(request('category'))
+                            @php
+                                $selectedCategory = $categories->firstWhere('slug', request('category'));
+                            @endphp
+                            @if($selectedCategory)
+                                <span class="badge" style="background-color: {{ $selectedCategory->color ?? '#ff6b35' }};">
+                                    Kategori: {{ $selectedCategory->name }}
+                                    <a href="{{ route('recipes.index', request()->except('category')) }}" class="text-white ms-1">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </span>
+                            @endif
+                        @endif
+                        @if(request('difficulty'))
+                            <span class="badge bg-info">
+                                Zorluk: {{ ucfirst(request('difficulty')) }}
+                                <a href="{{ route('recipes.index', request()->except('difficulty')) }}" class="text-white ms-1">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </span>
+                        @endif
+                        @if(request('sort') && request('sort') != 'latest')
+                            <span class="badge bg-warning text-dark">
+                                Sıralama: 
+                                @if(request('sort') == 'popular') Popüler
+                                @elseif(request('sort') == 'rating') En Çok Beğenilen
+                                @elseif(request('sort') == 'oldest') En Eski
+                                @endif
+                                <a href="{{ route('recipes.index', request()->except('sort')) }}" class="text-dark ms-1">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -180,10 +238,21 @@
 
                     {{-- Tüm tarifler --}}
                     <div class="all-recipes">
-                        <h2 class="section-title mb-4">
-                            <i class="fas fa-list me-2 text-primary"></i>
-                            Tüm Tarifler
-                        </h2>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2 class="section-title mb-0">
+                                <i class="fas fa-list me-2 text-primary"></i>
+                                @if(request()->hasAny(['search', 'category', 'difficulty']))
+                                    Arama Sonuçları
+                                @else
+                                    Tüm Tarifler
+                                @endif
+                            </h2>
+                            @if($recipes->total() > 0)
+                                <span class="text-muted">
+                                    <strong>{{ $recipes->total() }}</strong> tarif bulundu
+                                </span>
+                            @endif
+                        </div>
                         
                         @if($recipes->count() > 0)
                             <div class="recipes-grid">
@@ -483,5 +552,77 @@
     background-color: var(--dark-secondary);
     border-color: var(--border-dark);
 }
+
+/* Aktif filtreler */
+.active-filters {
+    padding-top: 0.5rem;
+}
+
+.active-filters .badge a {
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.active-filters .badge a:hover {
+    opacity: 1;
+}
+
+/* Pagination stilleri */
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.pagination .page-link {
+    background-color: var(--dark-card);
+    border-color: var(--border-dark);
+    color: var(--text-light);
+}
+
+.pagination .page-link:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: var(--dark-secondary);
+    border-color: var(--border-dark);
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
 </style>
+
+@endsection
+
+@section('extra-js')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sıralama değiştiğinde otomatik submit
+    const sortFilter = document.getElementById('sort-filter');
+    if (sortFilter) {
+        sortFilter.addEventListener('change', function() {
+            document.getElementById('recipe-filter-form').submit();
+        });
+    }
+
+    // Enter tuşu ile arama
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('recipe-filter-form').submit();
+            }
+        });
+    }
+});
+</script>
 @endsection

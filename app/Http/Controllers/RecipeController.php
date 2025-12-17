@@ -54,8 +54,8 @@ class RecipeController extends Controller
                 $query->latest();
         }
 
-        // Sayfalama ile getir
-        $recipes = $query->paginate(12);
+        // Sayfalama ile getir ve filtreleri query string'e ekle
+        $recipes = $query->paginate(12)->appends($request->query());
 
         // Kategorileri getir (filtreleme için)
         $categories = RecipeCategory::active()->ordered()->get();

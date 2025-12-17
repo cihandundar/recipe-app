@@ -33,7 +33,7 @@
                     <div class="card-body p-4 text-center">
                         {{-- Kategori ikonu --}}
                         <div class="category-icon mb-4">
-                            <i class="{{ $category['icon'] }} fa-4x text-{{ $category['color'] }}"></i>
+                            <i class="{{ $category['icon'] ?? 'fas fa-utensils' }} fa-4x" style="color: {{ $category['color'] ?? '#ff6b35' }};"></i>
                         </div>
                         
                         {{-- Kategori başlığı --}}
@@ -41,20 +41,21 @@
                         
                         {{-- Kategori açıklaması --}}
                         <p class="card-text text-muted mb-3">
-                            {{ $category['description'] }}
+                            {{ $category['description'] ?? '' }}
                         </p>
                         
                         {{-- Tarif sayısı göstergesi --}}
                         <div class="recipe-count mb-4">
-                            <span class="badge bg-{{ $category['color'] }}-subtle text-{{ $category['color'] }} fs-6">
+                            <span class="badge fs-6" style="background-color: {{ $category['color'] ?? '#ff6b35' }}20; color: {{ $category['color'] ?? '#ff6b35' }};">
                                 <i class="fas fa-book-open me-1"></i>
-                                {{ $category['recipe_count'] }} Tarif
+                                {{ $category['recipe_count'] ?? 0 }} Tarif
                             </span>
                         </div>
                         
                         {{-- Kategori detay sayfasına git butonu --}}
                         <a href="{{ route('category', $category['slug']) }}" 
-                           class="btn btn-{{ $category['color'] }} btn-lg">
+                           class="btn btn-lg"
+                           style="background-color: {{ $category['color'] ?? '#ff6b35' }}; border-color: {{ $category['color'] ?? '#ff6b35' }}; color: white;">
                             <i class="fas fa-arrow-right me-2"></i>
                             Tarifleri Gör
                         </a>
@@ -109,7 +110,7 @@
                         @php
                             $popularCategory = collect($categories)->sortByDesc('recipe_count')->first();
                         @endphp
-                        {{ $popularCategory['name'] }}
+                        {{ $popularCategory['name'] ?? 'Yok' }}
                     </h3>
                     <p class="text-muted mb-0">En Popüler Kategori</p>
                 </div>

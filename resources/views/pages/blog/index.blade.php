@@ -183,9 +183,11 @@
                     </div>
 
                     {{-- Sayfalama --}}
-                    <div class="pagination-wrapper mt-5">
-                        {{ $posts->links() }}
-                    </div>
+                    @if($posts->hasPages())
+                        <div class="pagination-wrapper mt-5">
+                            {{ $posts->links() }}
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Sağ taraf - Sidebar --}}
@@ -287,4 +289,39 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('extra-css')
+<style>
+/* Pagination stilleri */
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.pagination .page-link {
+    background-color: var(--dark-card);
+    border-color: var(--border-dark);
+    color: var(--text-light);
+}
+
+.pagination .page-link:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: var(--dark-secondary);
+    border-color: var(--border-dark);
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+</style>
 @endsection
